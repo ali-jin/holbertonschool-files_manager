@@ -1,28 +1,21 @@
 /* eslint-disable */
 import sha1 from 'sha1';
-import redisClient from '../utils/redis.mjs';
 import dbClient from '../utils/db.mjs';
 
 class UsersController {
   static async postNew(req, res) {
     const { email, password } = req.body;
 
-    if (!email) {
-      res.status(400).send({ error: 'Missing email' });
-    }
-    if (!password) {
-      res.status(400).send({ error: 'Missing password' });
-    }
-    const emailExist = await dbClient.collection('users').findOne({ email });
+    if (!email) return res.status(400).send({ error: 'Missing email' });
+    if (!password) return res.status(400).send({ error: 'Missing password' });
+    const emailExists = await dbClient.users.findOne({ email });
+    if (emailExists) return res.status(400).send({ error: 'Already exist' });
 
-    if (emailExist) {
-      res.status(400).send({ error: 'Already exist' })
-    }
-    const sha1Pass = sha1(password);
+    const secPass = sha1(password);
 
     const insertStat = await dbClient.users.insertOne({
       email,
-      password: sha1Pass,
+      password: secPass,
     });
 
     const createdUser = {
