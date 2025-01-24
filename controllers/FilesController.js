@@ -3,8 +3,8 @@ import { ObjectId } from 'mongodb';
 import Queue from 'bull';
 import fs from 'fs';
 import { v4 as uuidv4 } from 'uuid';
-import redisClient from '../utils/redis';
-import dbClient from '../utils/db';
+import redisClient from '../utils/redis.mjs';
+import dbClient from '../utils/db.mjs';
 
 class FilesController {
   static async postUpload(req, res) {
