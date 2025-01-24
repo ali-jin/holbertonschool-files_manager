@@ -1,33 +1,31 @@
 /* eslint-disable */
-import sha1 from 'sha1';
-import dbClient from '../utils/db.mjs';
+import crypto from 'crypto';
+import dbClient from '../utils/db';
 
 class UsersController {
   static async postNew(req, res) {
     const { email, password } = req.body;
 
-    if (!email) return res.status(400).send({ error: 'Missing email' });
-    if (!password) return res.status(400).send({ error: 'Missing password' });
-    const emailExists = await dbClient.users.findOne({ email });
-    if (emailExists) return res.status(400).send({ error: 'Already exist' });
+    if (!email) {
+      return res.status(400).json({ error: 'Missing email' });
+    }
+    if (!password) {
+      return res.status(400).json({ error: 'Missing password' });
+    }
 
-    const secPass = sha1(password);
+    const user = await dbClient.db.collection('users').findOne({ email });
+    if (user) {
+      return res.status(400).json({ error: 'Already exist' });
+    }
 
-    const insertStat = await dbClient.users.insertOne({
+    const hashedPassword = crypto.createHash('sha1').update(password).digest('hex');
+    const newUser = {
       email,
-      password: secPass,
-    });
-
-    const createdUser = {
-      id: insertStat.insertedId,
-      email,
+      password: hashedPassword,
     };
 
-    await userQ.add({
-      userId: insertStat.insertedId.toString(),
-    });
-
-    return res.status(201).send(createdUser);
+    const result = await dbClient.db.collection('users').insertOne(newUser);
+    return res.status(201).json({ id: result.insertedId, email });
   }
 }
 
