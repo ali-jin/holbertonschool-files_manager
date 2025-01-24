@@ -1,6 +1,7 @@
 /* eslint-disable */
 import express from 'express';
 import AppController from '../controllers/AppController.js';
+import UsersController from '../controllers/UsersController.js';
 
 function controllerRouting(app) {
   const router = express.Router();
@@ -17,6 +18,10 @@ function controllerRouting(app) {
   router.get('/stats', (req, res) => {
     AppController.getStats(req, res);
   });
+
+  router.post('/users', (req, res) => {
+    UsersController.postNew(req, res);
+  })
 }
 
 export default controllerRouting;
